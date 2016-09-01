@@ -9,12 +9,11 @@ PKG_RELEASE:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-
 define Package/$(PKG_NAME)
 	SECTION:=utils
 	CATEGORY:=Utilities
 	TITLE:=Wifi probe daemon
-	DEPENDS:=+libsqlite3
+	DEPENDS:=+libconfig +libsqlite3 +libstdcpp +libcurl +libpthread +libpcap
 endef
 
 define Package/$(PKG_NAME)/description

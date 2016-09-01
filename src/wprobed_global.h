@@ -1,4 +1,4 @@
-/* Copyright (C) - All Rights Reserved
+/* Copyright (C) Afa.L Cheng - All Rights Reserved
  *
  * Unauthorized copying of this file, via any medium is strictly prohibited
  *
@@ -10,6 +10,14 @@
 #ifndef WPROBED_GLOBAL_H
 #define WPROBED_GLOBAL_H
 
+#include <cstdint>
+#include <vector>
+#include <pthread.h>
+
+#define WPROBED_VERSION "0.1.0"
+
+void exit_with_error();
+
 struct sqlite;
 
 typedef struct WProbedArgs_t {
@@ -20,7 +28,13 @@ typedef struct WProbedArgs_t {
 } WProbedArgs;
 
 typedef struct WProbedGlobal_t {
-    struct sqlite *db;
+    struct sqlite3 *db;
+    std::vector<pthread_t> threads;
+    bool stop;  // the program should stop and exits
+
+    // Configs
+    std::uint32_t macRetiringTime;
+    std::uint32_t macCleanUpInterval;
 } WProbedGlobal;
 
 extern WProbedGlobal __global;
