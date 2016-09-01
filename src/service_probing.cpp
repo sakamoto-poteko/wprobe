@@ -66,7 +66,6 @@ static void pcap_loop_handler(u_char *user, const struct pcap_pkthdr *header, co
 #ifdef __LITTLE_ENDIAN
     addr2 = *(uint64_t *)(packet + len + 10) & 0x00FFFFFFFFFFFFUL;
     uint64_t be_mac = htobe64(addr2) >> 16;
-    syslog(LOG_DEBUG, "probe request from %012" PRIX64 " on iface %s", be_mac, arg->iface);
 
 #else
 #error "Big-endian not supported yet"
@@ -79,8 +78,12 @@ static void pcap_loop_handler(u_char *user, const struct pcap_pkthdr *header, co
     double diff = std::difftime(now, lastSeen);
 
     if (diff < __global.macRetiringTime) {
+        syslog(LOG_DEBUG, "probe request from %012" PRIX64 " on iface %s, last seen recently, not recording",
+               be_mac, arg->iface);
         return;
     }
+
+    syslog(LOG_DEBUG, "probe request from %012" PRIX64 " on iface %s", be_mac, arg->iface);
 
     // (`MAC`, `IFACE`, `TIMESTAMP`)
     int result = 0;
@@ -159,25 +162,12 @@ void start_probing()
             exit_with_error();
         }
 
-        pcap_t* pcap = pcap_create(ifaces[i], errbuf);
-        if (!pcap) {
-            syslog(LOG_ERR, "cannot open device `%s'' for capturing: %s", ifaces[i], errbuf);
-            exit_with_error();
-        }
-
-        if (pcap_set_rfmon(pcap, 1)) {
-            syslog(LOG_ERR, "cannot set device `%s'' to monitor mode", ifaces[i]);
-            exit_with_error();
-        } else {
-            syslog(LOG_DEBUG, "device `%s'' set to monitor mode", ifaces[i]);
-        }
 
         // 256 is enough for wifi capturing
-        pcap_set_snaplen(pcap, 256);
-        pcap_set_promisc(pcap, 1);
+        pcap_t* pcap = pcap_open_live(ifaces[i], 256, 1, 0, errbuf);
 
-        if (pcap_activate(pcap)) {
-            syslog(LOG_ERR, "failed to activate iface `%s'' for listening: %s", ifaces[i], pcap_geterr(pcap));
+        if (!pcap) {
+            syslog(LOG_ERR, "cannot open device `%s' for capturing: %s", ifaces[i], errbuf);
             exit_with_error();
         }
 
