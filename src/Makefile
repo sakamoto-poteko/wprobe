@@ -12,7 +12,7 @@ all: wprobed
 %.cpp.o: %.cpp
 	$(CXX) $(WPROBED_CXXFLAGS) $< -c -o $@
 
-wprobed: main.cpp.o service.cpp.o service_probing.cpp.o MacTimestampMap.cpp.o
+wprobed: main.cpp.o service.cpp.o service_probing.cpp.o service_upstream.cpp.o MacTimestampMap.cpp.o MacEventUploader.cpp.o
 	$(CXX) $(WPROBED_LDFLAGS) $^ -o $@
 
 clean:

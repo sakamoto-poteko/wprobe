@@ -7,11 +7,10 @@
  * Written by Afa Cheng <afa@afa.moe>, 2016
  */
 
-#ifndef SERVICE_H
-#define SERVICE_H
-
-void start_probing();
-void start_upstream();
+#ifndef UPSTREAM_H
+#define UPSTREAM_H
 
 
-#endif // SERVICE_H
+
+
+#endif // UPSTREAM_H

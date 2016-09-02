@@ -7,11 +7,5 @@
  * Written by Afa Cheng <afa@afa.moe>, 2016
  */
 
-#ifndef SERVICE_H
-#define SERVICE_H
+#include "upstream.h"
 
-void start_probing();
-void start_upstream();
-
-
-#endif // SERVICE_H

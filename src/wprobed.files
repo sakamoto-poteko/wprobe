@@ -8,3 +8,8 @@ service.cpp
 service_probing.cpp
 MacTimestampMap.h
 MacTimestampMap.cpp
+service_upstream.cpp
+upstream.h
+upstream.cpp
+MacEventUploader.h
+MacEventUploader.cpp

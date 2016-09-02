@@ -16,7 +16,11 @@
 #include <signal.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <fcntl.h>
+#include <ifaddrs.h>
+
 #include <sqlite3.h>
+#include <curl/curl.h>
 
 #include "wprobed_global.h"
 #include "service.h"
@@ -34,7 +38,14 @@ static void print_usage()
 
 static void print_version()
 {
-    // TODO: add
+    std::fprintf(stderr,
+                 "wprobed " WPROBED_VERSION " Copyright (c) " WPROBED_COPYRIGHT "\n"
+                 "Wireless network user tracking daemon\n\n"
+                 "libsqlite3: %s\n"
+                 "libcurl: %s\n"
+                 ,
+                 sqlite3_libversion(),
+                 curl_version());
 }
 
 static int parse_arguments(int argc, char **argv, WProbedArgs *args)
@@ -113,7 +124,7 @@ static void initialize_db()
         exit_with_error();
     }
     if (errstr) {
-        syslog(LOG_ERR, "failed to initialize db: %s", errstr);
+        syslog(LOG_ERR, "failed to initialize db: %s, %s", sqlite3_errstr(result), errstr);
         sqlite3_free(errstr);
         exit_with_error();
     }
@@ -125,8 +136,19 @@ static void parse_config(const char *configpath)
     // Set defaults
     __global.macCleanUpInterval = 500;  // Cleanup every 5000 packets
     __global.macRetiringTime    = 60;   // 60s
+    __global.upstreamBaseUrl    = "http://127.0.0.1/post";   // TODO: fix it
+    __global.upstreamInterval   = 60;   // 60s
 
     // TODO: parse config
+}
+
+static void populate_ifaces()
+{
+    // TODO: check cfg to replace this w/ cfg ifaces
+
+
+    // FIXME: populate ifaces and change those in service_probing
+
 }
 
 int main(int argc, char **argv)
@@ -143,6 +165,15 @@ int main(int argc, char **argv)
     if (args.debug)
         setlogmask(LOG_UPTO(LOG_DEBUG));
     log_arguments(&args);
+
+    // Check if there's already an instance running
+    int pid_file = open("/var/run/wprobed.pid", O_CREAT | O_RDWR, 0666);
+    if (lockf(pid_file, F_TLOCK, 0) == -1) {
+        if (errno == EAGAIN) {
+            syslog(LOG_ERR, "A wprobed instance is already running");
+            exit_with_error();
+        }
+    }
 
     parse_config(args.configfile);
 
@@ -172,20 +203,24 @@ int main(int argc, char **argv)
         syslog(LOG_DEBUG, "database %s opened", dbpath);
     }
 
+    // Populate ifaces
+    populate_ifaces();
+
     // Initialize DB
     initialize_db();
+    curl_global_init(CURL_GLOBAL_ALL);
 
     start_probing();
+    start_upstream();
 
     for (pthread_t thread : __global.threads) {
         pthread_join(thread, NULL);
     }
 
-    syslog(LOG_ERR, "a worker thread terminated");
-    exit_with_error();
+    // should never reache here
+    syslog(LOG_INFO, "wprobed stopped");
 
-    // Should never exit from here.
-    return 255;
+    return 0;
 }
 
 

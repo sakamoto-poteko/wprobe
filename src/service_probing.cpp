@@ -152,6 +152,8 @@ void start_probing()
     int ifaces_len = 1;
     char *ifaces[] = {"wlan0"};
 
+    bool atLeastOneCreated = false;
+
     for (int i = 0; i < ifaces_len; ++i) {
         int result;
 
@@ -202,8 +204,14 @@ void start_probing()
         result = pthread_create(&thread, NULL, pcap_loop_thread, arg);
         if (result) {
             syslog(LOG_ERR, "failed to create worker thread: %s", std::strerror(errno));
+            continue;   // Proceed to next interface
         }
         __global.threads.push_back(thread);
+        atLeastOneCreated = true;
     }
-    syslog(LOG_INFO, "all probing threads started");
+    if (!atLeastOneCreated) {
+        syslog(LOG_ERR, "no probing threads created");
+        exit_with_error();
+    }
+    syslog(LOG_INFO, "finished creating all probing threads");
 }
