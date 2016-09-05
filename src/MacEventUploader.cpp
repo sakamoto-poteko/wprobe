@@ -152,9 +152,9 @@ std::string MacEventUploader::macEventsToJson(const std::vector<MacEventUploader
             ss << ",";
 
         ss << "{"
-              "\"mac\": " << r.MAC << ","
-              "\"iface\": \"" << r.iface << "\","
-              "\"timestamp\": " << r.timestamp << ""
+              "\"mac\":" << r.MAC << ","
+              "\"iface\":\"" << r.iface << "\","
+              "\"timestamp\":" << r.timestamp << ""
               "}";
     }
 
