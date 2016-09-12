@@ -1,6 +1,3 @@
-#
-# This software is licensed under the Public Domain.
-#
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=wprobed
@@ -13,7 +10,7 @@ define Package/$(PKG_NAME)
 	SECTION:=utils
 	CATEGORY:=Utilities
 	TITLE:=Wifi probe daemon
-	DEPENDS:=+libconfig +libsqlite3 +libstdcpp +libcurl +libpthread +libpcap
+	DEPENDS:=+libpcap +libconfig +libsqlite3 +libstdcpp +libcurl +libpthread
 endef
 
 define Package/$(PKG_NAME)/description
@@ -32,7 +29,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) files/wprobed.init $(1)/etc/init.d/wprobed
 	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) files/wprobed.config $(1)/etc/config/wprobed
+	$(INSTALL_CONF) files/wprobed.conf $(1)/etc/wprobed/wprobed.cfg
 endef
 
 $(eval $(call BuildPackage,wprobed))

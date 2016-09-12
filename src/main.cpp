@@ -24,11 +24,12 @@
 
 #include "wprobed_global.h"
 #include "service.h"
+#include "configuration.h"
 
 void exit_with_error()
 {
     syslog(LOG_ERR, "error occured, exiting...");
-    exit(255);
+    exit(EXIT_FAILURE);
 }
 
 static void print_usage()
@@ -130,27 +131,6 @@ static void initialize_db()
     }
 }
 
-static void parse_config(const char *configpath)
-{
-    (void)configpath;
-    // Set defaults
-    __global.macCleanUpInterval = 500;  // Cleanup every 5000 packets
-    __global.macRetiringTime    = 60;   // 60s
-    __global.upstreamBaseUrl    = "http://127.0.0.1/post";   // TODO: fix it
-    __global.upstreamInterval   = 60;   // 60s
-
-    // TODO: parse config
-}
-
-static void populate_ifaces()
-{
-    // TODO: check cfg to replace this w/ cfg ifaces
-
-
-    // FIXME: populate ifaces and change those in service_probing
-
-}
-
 int main(int argc, char **argv)
 {
     int result = 0;
@@ -176,6 +156,7 @@ int main(int argc, char **argv)
     }
 
     parse_config(args.configfile);
+    log_config();
 
     syslog(LOG_INFO, "starting wprobed, version " WPROBED_VERSION);
     signal(SIGINT, sigint_handler);
@@ -202,9 +183,6 @@ int main(int argc, char **argv)
     } else {
         syslog(LOG_DEBUG, "database %s opened", dbpath);
     }
-
-    // Populate ifaces
-    populate_ifaces();
 
     // Initialize DB
     initialize_db();

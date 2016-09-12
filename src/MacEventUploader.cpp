@@ -31,7 +31,7 @@ MacEventUploader::MacEventUploader(sqlite3 *db, const std::string &baseUrl, cons
         exit_with_error();
     }
 
-    _endpoint = baseUrl + "/" + devid;
+    _endpoint = baseUrl + "/api/DeviceEvents/MacProbe/" + devid;
 //    _endpoint = baseUrl;
 
     _headers = curl_slist_append(_headers, "Content-Type: application/json");
@@ -142,8 +142,7 @@ std::string MacEventUploader::macEventsToJson(const std::vector<MacEventUploader
 {
     // Minimize string
     std::stringstream ss;
-    ss << "{"
-          "\"mac_events\":[";
+    ss << "[";
 
     for (std::size_t i = 0; i < records.size(); ++i) {
         ProbeRequestRecord r = records.at(i);
@@ -158,8 +157,7 @@ std::string MacEventUploader::macEventsToJson(const std::vector<MacEventUploader
               "}";
     }
 
-    ss << "]"
-          "}\n";
+    ss << "]";
 
     return ss.str();
 }

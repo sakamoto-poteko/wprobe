@@ -38,7 +38,7 @@ struct ieee80211_radiotap_header {
 
 struct pcap_loop_handler_arg {
     pcap_t *pcap;
-    char *iface;
+    std::string iface;
     sqlite3_stmt *insertstmt;
 
     uint32_t    packetCount;
@@ -61,12 +61,12 @@ static void pcap_loop_handler(u_char *user, const struct pcap_pkthdr *header, co
     ieee80211_radiotap_header *hdr = (ieee80211_radiotap_header *)packet;
     int len = hdr->len;
 
-    uint64_t addr2; // MAC is addr2 in probe frame
+    uint64_t addr2; // MAC is addr2 in probe frame, BE
+    uint64_t he_mac;
 
 #ifdef __LITTLE_ENDIAN
     addr2 = *(uint64_t *)(packet + len + 10) & 0x00FFFFFFFFFFFFUL;
-    uint64_t be_mac = htobe64(addr2) >> 16;
-
+    he_mac = be64toh(addr2) >> 16;
 #else
 #error "Big-endian not supported yet"
 #endif
@@ -79,11 +79,11 @@ static void pcap_loop_handler(u_char *user, const struct pcap_pkthdr *header, co
 
     if (diff < __global.macRetiringTime) {
         syslog(LOG_DEBUG, "probe request from %012" PRIX64 " on iface %s, last seen recently, not recording",
-               be_mac, arg->iface);
+               he_mac, arg->iface.c_str());
         return;
     }
 
-    syslog(LOG_DEBUG, "probe request from %012" PRIX64 " on iface %s", be_mac, arg->iface);
+    syslog(LOG_DEBUG, "probe request from %012" PRIX64 " on iface %s", he_mac, arg->iface.c_str());
 
     // (`MAC`, `IFACE`, `TIMESTAMP`)
     int result = 0;
@@ -95,7 +95,7 @@ static void pcap_loop_handler(u_char *user, const struct pcap_pkthdr *header, co
         goto sqlite_err;
     }
 
-    result = sqlite3_bind_text(insertstmt, 2, arg->iface, -1, SQLITE_STATIC);
+    result = sqlite3_bind_text(insertstmt, 2, arg->iface.c_str(), -1, SQLITE_STATIC);
     if (result != SQLITE_OK) {
         dberr = "bind IFACE";
         goto sqlite_err;
@@ -132,7 +132,7 @@ static void *pcap_loop_thread(void *inarg)
 {
     pcap_loop_handler_arg *arg = (pcap_loop_handler_arg *)inarg;
 
-    syslog(LOG_INFO, "probing thread for `%s' running", arg->iface);
+    syslog(LOG_INFO, "probing thread for `%s' running", arg->iface.c_str());
 
     int ret = pcap_loop(arg->pcap, -1, pcap_loop_handler, (u_char *)inarg);
     if (ret != -2) {    // An error occured. Not returned due to break call;
@@ -149,39 +149,39 @@ static void *pcap_loop_thread(void *inarg)
 
 void start_probing()
 {
-    int ifaces_len = 1;
-    char *ifaces[] = {"wlan0"};
+    std::vector<std::string> ifaces = __global.ifaces;
 
     bool atLeastOneCreated = false;
 
-    for (int i = 0; i < ifaces_len; ++i) {
+    for (std::size_t i = 0; i < ifaces.size(); ++i) {
         int result;
+        const char *iface = ifaces[i].c_str();
 
         // PCAP for probing
         char *errbuf = new char[PCAP_ERRBUF_SIZE];
         if (!errbuf) {
-            syslog(LOG_ERR, "cannot allocate pcap error buf");
-            exit_with_error();
+            syslog(LOG_ERR, "cannot allocate pcap error buf for iface `%s'", iface);
+            continue;
         }
 
 
         // 256 is enough for wifi capturing
-        pcap_t* pcap = pcap_open_live(ifaces[i], 256, 1, 0, errbuf);
+        pcap_t* pcap = pcap_open_live(iface, 256, 1, 0, errbuf);
 
         if (!pcap) {
-            syslog(LOG_ERR, "cannot open device `%s' for capturing: %s", ifaces[i], errbuf);
-            exit_with_error();
+            syslog(LOG_ERR, "cannot open device for capturing: %s", errbuf);
+            continue;
         }
 
         bpf_program bpf;
         if (pcap_compile(pcap, &bpf, "type mgt subtype probe-req", 0, PCAP_NETMASK_UNKNOWN) == -1) {
-            syslog(LOG_ERR, "BPF compilation failed: %s", pcap_geterr(pcap));
-            exit_with_error();
+            syslog(LOG_ERR, "BPF compilation failed for iface `%s': %s", iface, pcap_geterr(pcap));
+            continue;
         }
 
         if (pcap_setfilter(pcap, &bpf) == -1) {
-            syslog(LOG_ERR, "BPF filter set failed on device `%s': %s", ifaces[i], pcap_geterr(pcap));
-            exit_with_error();
+            syslog(LOG_ERR, "BPF filter set failed on device `%s': %s", iface, pcap_geterr(pcap));
+            continue;
         }
 
         pcap_freecode(&bpf);

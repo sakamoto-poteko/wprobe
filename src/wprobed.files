@@ -13,3 +13,7 @@ upstream.h
 upstream.cpp
 MacEventUploader.h
 MacEventUploader.cpp
+iface_init.cpp
+iface_init.h
+configuration.h
+configuration.cpp

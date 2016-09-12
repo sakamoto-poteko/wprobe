@@ -32,14 +32,14 @@ typedef struct WProbedArgs_t {
 typedef struct WProbedGlobal_t {
     struct sqlite3 *db;
     std::vector<pthread_t> threads;
-    std::vector<std::string> ifaces;    // Wireless ifaces
     bool stop;  // the program should stop and exits
 
     // Configs
+    std::vector<std::string> ifaces;    // Wireless ifaces
     std::uint32_t macRetiringTime;
     std::uint32_t macCleanUpInterval;
     std::uint32_t upstreamInterval;
-    const char *upstreamBaseUrl;
+    std::string upstreamBaseUrl;
 } WProbedGlobal;
 
 extern WProbedGlobal __global;
