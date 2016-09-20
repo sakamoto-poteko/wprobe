@@ -25,21 +25,25 @@ struct sqlite;
 typedef struct WProbedArgs_t {
     bool frontend;
     bool debug;
-    char *configfile;
-    char *dbpath;
+    std::string configfile;
+    std::string dbpath;
 } WProbedArgs;
 
 typedef struct WProbedGlobal_t {
     struct sqlite3 *db;
-    std::vector<pthread_t> threads;
     bool stop;  // the program should stop and exits
+    std::vector<pthread_t> threads;
+    std::string configpath;
 
     // Configs
+    std::uint64_t   SN;
+    bool            provisioned;
+    std::string     token;
     std::vector<std::string> ifaces;    // Wireless ifaces
-    std::uint32_t macRetiringTime;
-    std::uint32_t macCleanUpInterval;
-    std::uint32_t upstreamInterval;
-    std::string upstreamBaseUrl;
+    std::uint32_t   macRetiringTime;
+    std::uint32_t   macCleanUpInterval;
+    std::uint32_t   upstreamInterval;
+    std::string     upstreamBaseUrl;
 } WProbedGlobal;
 
 extern WProbedGlobal __global;

@@ -127,7 +127,7 @@ void MacEventUploader::upload()
 
     CURLcode res = curl_easy_perform(_curlUploadRequest);
     if (res != CURLE_OK) {
-        syslog(LOG_ERR, "curl error: %s", curl_easy_strerror(res));
+        syslog(LOG_ERR, "failed to upload data: %s", curl_easy_strerror(res));
         return;
     }
 

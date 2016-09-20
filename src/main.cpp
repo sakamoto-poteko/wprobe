@@ -49,6 +49,14 @@ static void print_version()
                  curl_version());
 }
 
+static void init_arguments(WProbedArgs *args)
+{
+    args->configfile.assign("/etc/wprobed/wprobed.cfg");
+    args->dbpath.assign("/etc/wprobed/wprobed.sqlite3");
+    args->debug = false;
+    args->frontend = false;
+}
+
 static int parse_arguments(int argc, char **argv, WProbedArgs *args)
 {
     int c;
@@ -70,10 +78,10 @@ static int parse_arguments(int argc, char **argv, WProbedArgs *args)
                 args->debug = true;
                 break;
             case 'c':
-                args->configfile = strdup(optarg);
+                args->configfile.assign(optarg);
                 break;
             case 'd':
-                args->dbpath = strdup(optarg);
+                args->dbpath.assign(optarg);
                 break;
             case '?':
                 if (optopt == 'c' || optopt == 'd')
@@ -104,8 +112,8 @@ static void log_arguments(WProbedArgs *args)
     syslog(LOG_DEBUG, "%s%sdb path: %s, config: %s",
            args->frontend ? "front end, " : "",
            args->debug ? "debug, " : "",
-           args->dbpath ? args->dbpath : "default",
-           args->configfile ? args->configfile : "default");
+           args->dbpath.c_str(),
+           args->configfile.c_str());
 }
 
 static void initialize_db()
@@ -134,13 +142,14 @@ static void initialize_db()
 int main(int argc, char **argv)
 {
     int result = 0;
-    WProbedArgs args = {0};
+    WProbedArgs args;
 
     // syslog
     setlogmask(LOG_UPTO(LOG_NOTICE));
     openlog("wprobed",  LOG_CONS | LOG_PID | LOG_NDELAY | LOG_PERROR, LOG_DAEMON);
     syslog(LOG_INFO, "starting ...");
 
+    init_arguments(&args);
     parse_arguments(argc, argv, &args);
     if (args.debug)
         setlogmask(LOG_UPTO(LOG_DEBUG));
@@ -155,7 +164,7 @@ int main(int argc, char **argv)
         }
     }
 
-    parse_config(args.configfile);
+    parse_config(args.configfile.c_str());
     log_config();
 
     syslog(LOG_INFO, "starting wprobed, version " WPROBED_VERSION);
@@ -172,7 +181,7 @@ int main(int argc, char **argv)
     }
 
     // Open DB
-    const char *dbpath = args.dbpath ? args.dbpath : "/etc/wprobed/db.sqlite3";
+    const char *dbpath = args.dbpath.c_str();
     result = sqlite3_open_v2(dbpath, &__global.db,
                              SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX,
                              NULL);

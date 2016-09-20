@@ -1,9 +1,9 @@
 VPATH=.
-INCLUDE=$(shell pkg-config --cflags libconfig++)
+INCLUDE=$(shell pkg-config --cflags libconfig)
 DEFINE=-D_BSD_SOURCE
 WPROBED_CFLAGS=-Wall -std=c11 $(DEFINE) $(INCLUDE) -g 
 WPROBED_CXXFLAGS=-Wall -std=c++11 $(DEFINE) $(INCLUDE) -g
-WPROBED_LDFLAGS=-lpcap -lcurl -lsqlite3 -lconfig -lpthread $(shell pkg-config --libs libconfig++) -g
+WPROBED_LDFLAGS=-lpcap -lcurl -lsqlite3 -lconfig -lpthread $(shell pkg-config --libs libconfig) -g
 
 all: wprobed
 

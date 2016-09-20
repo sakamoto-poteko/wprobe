@@ -28,8 +28,8 @@ define Package/$(PKG_NAME)/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) files/wprobed.init $(1)/etc/init.d/wprobed
-	$(INSTALL_DIR) $(1)/etc/config
-	$(INSTALL_CONF) files/wprobed.conf $(1)/etc/wprobed/wprobed.cfg
+	$(INSTALL_DIR) $(1)/etc/wprobed
+	$(INSTALL_CONF) files/wprobed.cfg $(1)/etc/wprobed/wprobed.cfg
 endef
 
 $(eval $(call BuildPackage,wprobed))

@@ -10,8 +10,12 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <cstdint>
 
 void parse_config(const char *configpath);
 void log_config();
+bool write_device_token(std::string token);
+
+std::uint64_t get_sn();
 
 #endif // CONFIGURATION_H
