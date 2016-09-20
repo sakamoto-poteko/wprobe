@@ -34,14 +34,26 @@ void exit_with_error()
 
 static void print_usage()
 {
-    // TODO: add
+    std::fprintf(stderr,
+                 WPROBED_INTRO_STRING "\n"
+                 "Usage: wprobed [options]\n"
+                 "\n"
+                 "    -h        This help text\n"
+                 "    -v        Show verbose version info\n"
+                 "    -d db     Use database on path db\n"
+                 "    -c cfg    Use config file on path cfg\n"
+                 "    -D        Debug mode\n"
+                 "    -f        Run in front end\n"
+                 );
 }
 
 static void print_version()
 {
     std::fprintf(stderr,
-                 "wprobed " WPROBED_VERSION " Copyright (c) " WPROBED_COPYRIGHT "\n"
+                 WPROBED_INTRO_STRING "\n"
+                 "Copyright (c) " WPROBED_COPYRIGHT "\n"
                  "Wireless network user tracking daemon\n\n"
+                 "This tool is linked against:\n"
                  "libsqlite3: %s\n"
                  "libcurl: %s\n"
                  ,

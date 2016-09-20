@@ -21,6 +21,7 @@
 class MacEventUploader
 {
 public:
+    // devid is never used
     MacEventUploader(sqlite3 *db, const std::string &baseUrl, const std::string &devid);
     ~MacEventUploader();
     void upload();

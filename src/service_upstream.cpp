@@ -140,7 +140,6 @@ static void *upstream_work_thread(void *)
     syslog(LOG_INFO, "upstream thread running");
 
     MacEventUploader macEventUploader(__global.db, __global.upstreamBaseUrl, "");
-    // FIXME: fix devid arg
 
     int fd; // timerfd
     fd = timerfd_create(CLOCK_REALTIME, 0);

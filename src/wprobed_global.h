@@ -18,6 +18,17 @@
 #define WPROBED_VERSION "0.1.0"
 #define WPROBED_COPYRIGHT "Afa Cheng <afa@heckphi.com>"
 
+#if defined(__mips__)
+#define WPROBED_ARCH "mips"
+#elif defined(__amd64__)
+#define WPROBED_ARCH "amd64"
+#else
+#define WPROBED_ARCH "unknown"
+#warning "This is an untested architecture!"
+#endif
+
+#define WPROBED_INTRO_STRING "wprobed " WPROBED_VERSION " for " WPROBED_ARCH " compiled on " __DATE__ " " __TIME__
+
 void exit_with_error();
 
 struct sqlite;
